@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contactar Agente - Inmobiliaria</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; color: #1a1a1a; }
+
+        nav {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 14px 40px; background: #1e1b4b;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 8px;
+            color: white; font-size: 18px; font-weight: 600; text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 30px; height: 30px; background: #6D28D9;
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+        }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-links a {
+            color: rgba(255,255,255,0.8); text-decoration: none;
+            padding: 7px 14px; border-radius: 6px; font-size: 14px;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links .btn-nav {
+            background: #6D28D9; color: white; padding: 7px 16px;
+            border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none;
+        }
+
+        /* HERO */
+        .hero {
+            display: flex; min-height: 260px;
+            background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%);
+        }
+        .hero-left {
+            flex: 0 0 45%; padding: 48px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .hero-left h1 { color: white; font-size: 28px; margin-bottom: 16px; }
+        .hero-left p { color: rgba(255,255,255,0.75); font-size: 14px; margin-bottom: 20px; }
+        .btn-hero {
+            display: inline-block; padding: 11px 24px;
+            background: white; color: #6D28D9;
+            border-radius: 8px; font-size: 14px; font-weight: 700;
+            text-decoration: none; width: fit-content;
+        }
+        .btn-hero:hover { background: #ede9fe; }
+        .hero-right {
+            flex: 1;
+            background: url('https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800') center/cover;
+            position: relative;
+        }
+        .hero-right::after {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(30,27,75,0.25);
+        }
+
+        /* OPCIONES */
+        .seccion { padding: 40px; }
+        .seccion-titulo { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
+
+        .opciones-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            background: white; border-radius: 12px;
+            border: 1px solid #e5e7eb; padding: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+        }
+        .opcion-item { display: flex; flex-direction: column; gap: 12px; }
+        .opcion-img {
+            height: 160px; background: #c4b5fd;
+            border-radius: 10px; display: flex;
+            align-items: center; justify-content: center;
+            color: #5b21b6; font-size: 13px; font-weight: 600;
+        }
+        .opcion-img.v2 { background: #a5b4fc; color: #3730a3; }
+        .btn-opcion {
+            padding: 10px 18px; background: #6D28D9; color: white;
+            border: none; border-radius: 8px; font-size: 13px;
+            font-weight: 600; cursor: pointer; text-align: center;
+            text-decoration: none; display: block;
+        }
+        .btn-opcion:hover { background: #5b21b6; }
+
+        /* CONTACTO AGENTE */
+        .contacto-card {
+            background: white; border-radius: 12px;
+            border: 1px solid #e5e7eb; padding: 28px;
+            display: flex; gap: 28px; align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .agente-img {
+            width: 120px; height: 120px; background: #c4b5fd;
+            border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #5b21b6; font-size: 13px; font-weight: 600;
+        }
+        .agente-info h3 { font-size: 18px; margin-bottom: 6px; }
+        .agente-info p { font-size: 14px; color: #6b7280; margin-bottom: 16px; line-height: 1.6; }
+        .btn-contactar {
+            padding: 12px 28px; background: #6D28D9; color: white;
+            border: none; border-radius: 8px; font-size: 14px;
+            font-weight: 600; cursor: pointer; text-decoration: none;
+            display: inline-block;
+        }
+        .btn-contactar:hover { background: #5b21b6; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a class="nav-logo" href="index.html">
+            <div class="nav-logo-icon">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" fill="white"/>
+                </svg>
+            </div>
+            Inmobiliaria
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Inicio</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="contactoAgente.html">Contacto</a>
+            <a href="UsuarioServlet" class="btn-nav">Registrarse</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-left">
+            <h1>¿Listo para encontrar tu propiedad?</h1>
+            <p>Explora nuestro catálogo o sube tu inmueble para llegar a miles de compradores.</p>
+            <a href="catalogo.html" class="btn-hero">Ver propiedades</a>
+        </div>
+        <div class="hero-right"></div>
+    </section>
+
+    <!-- OPCIONES -->
+    <section class="seccion">
+        <p class="seccion-titulo">¿Qué deseas hacer hoy?</p>
+        <div class="opciones-grid">
+            <div class="opcion-item">
+                <div class="opcion-img">Imagen — Ver ejemplos</div>
+                <a href="catalogo.html" class="btn-opcion">Ver ejemplos de propiedades</a>
+            </div>
+            <div class="opcion-item">
+                <div class="opcion-img v2">Imagen — Subir inmueble</div>
+                <a href="UsuarioServlet" class="btn-opcion">Registrarme para subir inmueble</a>
+            </div>
+        </div>
+
+        <!-- CONTACTAR AGENTE -->
+        <p class="seccion-titulo">Contactar con un agente</p>
+        <div class="contacto-card">
+            <div class="agente-img">Foto agente</div>
+            <div class="agente-info">
+                <h3>Habla con uno de nuestros agentes</h3>
+                <p>Nuestros agentes especializados te ayudarán a encontrar la propiedad perfecta o a vender tu inmueble al mejor precio. Disponibles de lunes a sábado.</p>
+                <a href="mailto:agentes@inmobiliaria.com" class="btn-contactar">Contactar agente</a>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle - Inmobiliaria</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; color: #1a1a1a; }
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 40px; background: #1e1b4b; }
+        .nav-logo { display: flex; align-items: center; gap: 8px; color: white; font-size: 18px; font-weight: 600; text-decoration: none; }
+        .nav-logo-icon { width: 30px; height: 30px; background: #6D28D9; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links .btn-nav { background: #6D28D9; color: white; padding: 7px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; }
+        .contenido { max-width: 1000px; margin: 32px auto; padding: 0 24px; }
+        .btn-volver { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; padding: 8px 16px; background: white; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; color: #374151; text-decoration: none; }
+        .btn-volver:hover { background: #f3f4f6; }
+        .detalle-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+        .img-principal { width: 100%; height: 420px; object-fit: cover; border-radius: 12px; display: block; }
+        .info-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .badge-tipo { display: inline-block; background: #ede9fe; color: #5b21b6; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px; margin-bottom: 10px; }
+        .info-card h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 6px; }
+        .info-card .precio { font-size: 26px; color: #6D28D9; font-weight: 700; margin-bottom: 16px; }
+        .datos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .dato { background: #f9fafb; border-radius: 8px; padding: 10px 12px; }
+        .dato-label { font-size: 10px; color: #9ca3af; margin-bottom: 3px; text-transform: uppercase; }
+        .dato-valor { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+        .divider { height: 1px; background: #e5e7eb; margin: 14px 0; }
+        .descripcion h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .descripcion p { font-size: 13px; color: #6b7280; line-height: 1.7; }
+        .btn-contactar { display: block; width: 100%; margin-top: 16px; padding: 12px; background: #6D28D9; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-contactar:hover { background: #5b21b6; }
+        .btn-wsp { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-wsp:hover { background: #1ebe5c; }
+        .caracteristicas { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 24px; margin-top: 24px; }
+        .caracteristicas h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .lista-caract { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .caract-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; }
+        .caract-item::before { content: '✓'; color: #6D28D9; font-weight: 700; }
+        .no-encontrado { text-align: center; padding: 80px 24px; color: #9ca3af; }
+        .no-encontrado h2 { font-size: 20px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="nav-logo" href="index.html">
+            <div class="nav-logo-icon">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" fill="white"/>
+                </svg>
+            </div>
+            Inmobiliaria
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Inicio</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="contactoAgente.html">Contacto</a>
+            <a href="UsuarioServlet" class="btn-nav">Registrarse</a>
+        </div>
+    </nav>
+
+    <div class="contenido">
+        <a class="btn-volver" href="catalogo.html">&#8592; Volver al catálogo</a>
+        <div id="contenido-detalle"></div>
+    </div>
+
+    <script>
+        const propiedades = {
+            1:  { titulo: "Casa en El Prado",         imagen: "images/casa1.jpg",  precio: "$850.000.000",   tipo: "Casa",        habitaciones: 4, banos: 3, area: "220 m²",      ubicacion: "El Prado, Barranquilla",      estrato: 6, estado: "Disponible", descripcion: "Hermosa casa en el exclusivo barrio El Prado. Amplios espacios, acabados de lujo, jardín y zona BBQ. Ideal para familia numerosa. Cerca de colegios y centros comerciales.", caracteristicas: ["Jardín", "Garaje doble", "Zona BBQ", "Seguridad 24h", "Cuarto de servicio", "Piscina", "Aire acondicionado", "Cocina integral", "Closets empotrados"] },
+            2:  { titulo: "Casa en Ciudad Jardín",    imagen: "images/casa2.jpg",  precio: "$650.000.000",   tipo: "Casa",        habitaciones: 5, banos: 4, area: "300 m²",      ubicacion: "Ciudad Jardín, Barranquilla", estrato: 5, estado: "Disponible", descripcion: "Espaciosa casa familiar en Ciudad Jardín con área de juegos para niños, estudio y cuarto de servicio independiente. Zona tranquila y residencial.",                         caracteristicas: ["Estudio", "Garaje triple", "Área de juegos", "Cuarto de servicio", "Seguridad 24h", "Jardín", "Cocina integral", "Terraza", "Depósito"] },
+            3:  { titulo: "Casa en Riomar",           imagen: "images/casa3.jpg",  precio: "$1.200.000.000", tipo: "Casa",        habitaciones: 6, banos: 5, area: "450 m²",      ubicacion: "Riomar, Barranquilla",        estrato: 6, estado: "Disponible", descripcion: "Lujosa mansión en Riomar. Diseño arquitectónico moderno, piscina olímpica, cine privado y vista panorámica. Uno de los sectores más exclusivos de Barranquilla.",         caracteristicas: ["Piscina olímpica", "Cine privado", "Garaje cuádruple", "Ascensor", "Jacuzzi", "Seguridad 24h", "Gimnasio", "Terraza panorámica", "Cuarto de servicio"] },
+            5:  { titulo: "Apartamento en Manga",     imagen: "images/casa5.jpg",  precio: "$420.000.000",   tipo: "Apartamento", habitaciones: 3, banos: 2, area: "110 m²",      ubicacion: "Manga, Cartagena",            estrato: 5, estado: "Disponible", descripcion: "Moderno apartamento con vista al mar en el histórico barrio Manga. Acabados de primera, balcón y parqueadero incluido. A minutos del centro histórico de Cartagena.",      caracteristicas: ["Vista al mar", "Balcón", "Parqueadero", "Seguridad 24h", "Ascensor", "Lavandería", "Aire acondicionado", "Cocina integral", "Depósito"] },
+            6:  { titulo: "Casa en Soledad",          imagen: "images/casa6.jpg",  precio: "$380.000.000",   tipo: "Casa",        habitaciones: 3, banos: 2, area: "180 m²",      ubicacion: "Soledad, Atlántico",          estrato: 4, estado: "Disponible", descripcion: "Cómoda casa familiar en Soledad con excelente ubicación. Cerca de centros comerciales, colegios y transporte público. Ideal para primera vivienda.",                      caracteristicas: ["Garaje", "Patio trasero", "Cocina integral", "Closets", "Reja de seguridad", "Zona de lavado", "Cuarto adicional", "Sala-comedor amplio", "Ventilación natural"] },
+            7:  { titulo: "Apartamento en Bocagrande",imagen: "images/casa7.jpg",  precio: "$520.000.000",   tipo: "Apartamento", habitaciones: 2, banos: 2, area: "90 m²",       ubicacion: "Bocagrande, Cartagena",       estrato: 6, estado: "Disponible", descripcion: "Apartamento de lujo en Bocagrande a una cuadra de la playa. Totalmente amoblado. Perfecto para vivir o como inversión turística en Cartagena.",                          caracteristicas: ["1 cuadra de la playa", "Amoblado", "Balcón", "Ascensor", "Parqueadero", "Piscina comunal", "Seguridad 24h", "Aire acondicionado", "Cocina equipada"] },
+            8:  { titulo: "Casa en el Norte",         imagen: "images/casa8.jpg",  precio: "$750.000.000",   tipo: "Casa",        habitaciones: 4, banos: 3, area: "260 m²",      ubicacion: "Norte, Barranquilla",         estrato: 5, estado: "Disponible", descripcion: "Elegante casa en el norte de Barranquilla con diseño contemporáneo. Cocina gourmet, zona de entretenimiento e iluminación natural en todos los espacios.",               caracteristicas: ["Cocina gourmet", "Garaje doble", "Zona de entretenimiento", "Jardín", "Seguridad 24h", "Cuarto de servicio", "Estudio", "Terraza", "Depósito"] },
+            10: { titulo: "Finca en Sabanalarga",     imagen: "images/casa10.jpg", precio: "$900.000.000",   tipo: "Finca",       habitaciones: 4, banos: 3, area: "2 hectáreas", ubicacion: "Sabanalarga, Atlántico",      estrato: 3, estado: "Disponible", descripcion: "Hermosa finca a 45 minutos de Barranquilla. Incluye casa principal, caballerizas, piscina y zona de camping. Ideal para descanso o actividad agropecuaria.",            caracteristicas: ["Piscina", "Caballerizas", "Zona de camping", "Casa de huéspedes", "Pozo propio", "Zona de cultivo", "Parqueadero amplio", "Rancho BBQ", "Energía solar"] }
+        };
+
+        const id = parseInt(new URLSearchParams(window.location.search).get('id'));
+        const p  = propiedades[id];
+        const div = document.getElementById('contenido-detalle');
+
+        if (p) {
+            document.title = p.titulo + " - Inmobiliaria";
+            div.innerHTML = `
+                <div class="detalle-grid">
+                    <img class="img-principal" src="${p.imagen}" alt="${p.titulo}">
+                    <div class="info-card">
+                        <span class="badge-tipo">${p.tipo}</span>
+                        <h1>${p.titulo}</h1>
+                        <div class="precio">${p.precio}</div>
+                        <div class="datos-grid">
+                            <div class="dato"><div class="dato-label">Habitaciones</div><div class="dato-valor"> ${p.habitaciones}</div></div>
+                            <div class="dato"><div class="dato-label">Baños</div><div class="dato-valor">🚿 ${p.banos}</div></div>
+                            <div class="dato"><div class="dato-label">Área</div><div class="dato-valor"> ${p.area}</div></div>
+                            <div class="dato"><div class="dato-label">Estrato</div><div class="dato-valor"> ${p.estrato}</div></div>
+                            <div class="dato"><div class="dato-label">Ubicación</div><div class="dato-valor"> ${p.ubicacion}</div></div>
+                            <div class="dato"><div class="dato-label">Estado</div><div class="dato-valor" style="color:#065f46">✓ ${p.estado}</div></div>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="descripcion">
+                            <h3>Descripción</h3>
+                            <p>${p.descripcion}</p>
+                        </div>
+                        <a href="contactoAgente.html" class="btn-contactar">Contactar agente</a>
+                        <a href="https://wa.me/573000000000?text=Hola, me interesa: ${p.titulo}" target="_blank" class="btn-wsp">📱 Contactar por WhatsApp</a>
+                    </div>
+                </div>
+                <div class="caracteristicas">
+                    <h3>Características del inmueble</h3>
+                    <div class="lista-caract">
+                        ${p.caracteristicas.map(c => `<div class="caract-item">${c}</div>`).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            div.innerHTML = `
+                <div class="no-encontrado">
+                    <h2>Propiedad no encontrada</h2>
+                    <a href="catalogo.html" style="color:#6D28D9;">← Volver al catálogo</a>
+                </div>`;
+        }
+    </script>
+</body>
+</html>

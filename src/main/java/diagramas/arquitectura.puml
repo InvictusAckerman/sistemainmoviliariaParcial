@@ -1,0 +1,47 @@
+@startuml
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam packageFontStyle bold
+skinparam packageStyle card
+
+package "Presentación" <<Folder>> {
+    class UsuarioServlet <<Control>>
+    class LoginServlet <<Control>>
+}
+
+package "Servicio" <<Folder>> {
+    class UsuarioServicio <<Service>>
+    class InmuebleServicio <<Service>>
+}
+
+package "Persistencia" <<Folder>> {
+    class UsuarioRepositorio <<Repository>>
+    class InmuebleRepositorio <<Repository>>
+}
+
+package "Modelo" <<Folder>> {
+    class Usuario
+    class Inmueble
+    class Casa
+    class Apartamento
+    class Local
+}
+
+' Relaciones entre capas
+UsuarioServlet ..> UsuarioServicio : usa
+LoginServlet ..> UsuarioServicio : usa
+UsuarioServicio ..> UsuarioRepositorio : usa
+InmuebleServicio ..> InmuebleRepositorio : usa
+UsuarioRepositorio ..> Usuario : usa
+InmuebleRepositorio ..> Inmueble : usa
+
+' Herencia en Modelo
+Inmueble <|-- Casa
+Inmueble <|-- Apartamento
+Inmueble <|-- Local
+
+' Asociación
+Usuario --> Inmueble
+
+@enduml

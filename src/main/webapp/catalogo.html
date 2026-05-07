@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Inmobiliaria</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; color: #1a1a1a; }
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 40px; background: #1e1b4b; position: sticky; top: 0; z-index: 100; }
+        .nav-logo { display: flex; align-items: center; gap: 8px; color: white; font-size: 18px; font-weight: 600; text-decoration: none; }
+        .nav-logo-icon { width: 30px; height: 30px; background: #6D28D9; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links .btn-nav { background: #6D28D9; color: white; padding: 7px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; }
+        .busqueda-bar { background: white; padding: 20px 40px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #e5e7eb; }
+        .busqueda-bar input { flex: 1; padding: 11px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; }
+        .busqueda-bar input:focus { border-color: #6D28D9; }
+        .busqueda-bar select { padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; background: white; }
+        .busqueda-bar button { padding: 11px 24px; background: #6D28D9; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .busqueda-bar button:hover { background: #5b21b6; }
+        .contenido { padding: 32px 40px; }
+        .opciones-titulo { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .grid-catalogo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .prop-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; }
+        .prop-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .prop-card.destacada { border: 2px solid #6D28D9; }
+        .img-wrap { position: relative; width: 100%; height: 200px; overflow: hidden; }
+        .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .badge-dest { position: absolute; top: 10px; left: 10px; background: #6D28D9; color: white; font-size: 10px; padding: 3px 8px; border-radius: 4px; z-index: 1; }
+        .prop-info { padding: 16px; }
+        .prop-info h4 { font-size: 15px; color: #1a1a1a; margin-bottom: 4px; font-weight: 600; }
+        .prop-info .precio { font-size: 16px; color: #6D28D9; font-weight: 700; margin-bottom: 6px; }
+        .prop-info p { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+        .btn-ver { display: block; padding: 9px; background: #6D28D9; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-ver:hover { background: #5b21b6; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="nav-logo" href="index.html">
+            <div class="nav-logo-icon">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" fill="white"/>
+                </svg>
+            </div>
+            Inmobiliaria
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Inicio</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="contactoAgente.html">Contacto</a>
+            <a href="UsuarioServlet" class="btn-nav">Registrarse</a>
+        </div>
+    </nav>
+
+    <div class="busqueda-bar">
+        <input type="text" id="buscar" placeholder="Buscar por ciudad, barrio o referencia...">
+        <select id="tipo">
+            <option value="">Todos los tipos</option>
+            <option value="Casa">Casa</option>
+            <option value="Apartamento">Apartamento</option>
+            <option value="Finca">Finca</option>
+        </select>
+        <select id="precio">
+            <option value="">Cualquier precio</option>
+            <option value="500">Hasta $500M</option>
+            <option value="1000">$500M - $1.000M</option>
+            <option value="9999">Más de $1.000M</option>
+        </select>
+        <button onclick="filtrar()">Aplicar filtros</button>
+    </div>
+
+    <div class="contenido">
+        <p class="opciones-titulo">Propiedades disponibles</p>
+        <div class="grid-catalogo" id="grid"></div>
+    </div>
+
+    <script>
+        const propiedades = [
+            { id: 1,  imagen: "images/casa1.jpg",  titulo: "Casa en El Prado",         precio: 850,  tipo: "Casa",        desc: "4 hab · 3 baños · 220 m² · Barranquilla", destacada: true  },
+            { id: 2,  imagen: "images/casa2.jpg",  titulo: "Casa en Ciudad Jardín",     precio: 650,  tipo: "Casa",        desc: "5 hab · 4 baños · 300 m² · Barranquilla", destacada: false },
+            { id: 3,  imagen: "images/casa3.jpg",  titulo: "Casa en Riomar",            precio: 1200, tipo: "Casa",        desc: "6 hab · 5 baños · 450 m² · Barranquilla", destacada: false },
+            { id: 5,  imagen: "images/casa5.jpg",  titulo: "Apartamento en Manga",      precio: 420,  tipo: "Apartamento", desc: "3 hab · 2 baños · 110 m² · Cartagena",   destacada: false },
+            { id: 6,  imagen: "images/casa6.jpg",  titulo: "Casa en Soledad",           precio: 380,  tipo: "Casa",        desc: "3 hab · 2 baños · 180 m² · Soledad",     destacada: false },
+            { id: 7,  imagen: "images/casa7.jpg",  titulo: "Apartamento en Bocagrande", precio: 520,  tipo: "Apartamento", desc: "2 hab · 2 baños · 90 m² · Cartagena",    destacada: false },
+            { id: 8,  imagen: "images/casa8.jpg",  titulo: "Casa en el Norte",          precio: 750,  tipo: "Casa",        desc: "4 hab · 3 baños · 260 m² · Barranquilla", destacada: false },
+            { id: 10, imagen: "images/casa10.jpg", titulo: "Finca en Sabanalarga",      precio: 900,  tipo: "Finca",       desc: "2 hectáreas · Casa principal · Atlántico", destacada: false }
+        ];
+
+        function renderizar(lista) {
+            const grid = document.getElementById('grid');
+            if (lista.length === 0) {
+                grid.innerHTML = "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>No se encontraron propiedades.</p>";
+                return;
+            }
+            grid.innerHTML = lista.map(p => `
+                <div class="prop-card ${p.destacada ? 'destacada' : ''}">
+                    <div class="img-wrap">
+                        ${p.destacada ? "<span class='badge-dest'>Destacada</span>" : ""}
+                        <img src="${p.imagen}" alt="${p.titulo}" onerror="this.style.display='none'">
+                    </div>
+                    <div class="prop-info">
+                        <h4>${p.titulo}</h4>
+                        <div class="precio">$${p.precio.toLocaleString('es-CO')}.000.000</div>
+                        <p>${p.desc}</p>
+                        <a href="detalle.html?id=${p.id}" class="btn-ver">Ver detalles</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filtrar() {
+            const texto = document.getElementById('buscar').value.toLowerCase();
+            const tipo  = document.getElementById('tipo').value;
+            const precio = document.getElementById('precio').value;
+
+            let resultado = propiedades.filter(p => {
+                const coincideTexto = p.titulo.toLowerCase().includes(texto) || p.desc.toLowerCase().includes(texto);
+                const coincideTipo  = tipo === '' || p.tipo === tipo;
+                let coincidePrecio  = true;
+                if (precio === '500')  coincidePrecio = p.precio <= 500;
+                if (precio === '1000') coincidePrecio = p.precio > 500 && p.precio <= 1000;
+                if (precio === '9999') coincidePrecio = p.precio > 1000;
+                return coincideTexto && coincideTipo && coincidePrecio;
+            });
+            renderizar(resultado);
+        }
+
+        // Cargar al inicio
+        renderizar(propiedades);
+    </script>
+</body>
+</html>
