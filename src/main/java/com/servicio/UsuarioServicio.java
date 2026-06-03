@@ -9,27 +9,34 @@ public class UsuarioServicio {
 
     private final UsuarioRepositorio repositorio = new UsuarioRepositorio();
 
-    public boolean registrar(Usuario u) throws Exception {
-        if (u.getNombre() == null || u.getNombre().trim().isEmpty())
-            throw new Exception("El nombre es obligatorio");
-        if (u.getApellido() == null || u.getApellido().trim().isEmpty())
-            throw new Exception("El apellido es obligatorio");
-        if (u.getEmail() == null || !u.getEmail().contains("@") || !u.getEmail().contains("."))
-            throw new Exception("El email no tiene un formato válido");
-        if (u.getContrasena() == null || u.getContrasena().trim().length() < 4)
-            throw new Exception("La contraseña debe tener al menos 4 caracteres");
+    // ✅ Recibe strings y crea el objeto Usuario aquí
+    public boolean registrar(String nombre, String apellido, String email,
+                             String telefono, String tipoUsuario,
+                             String contrasena) throws Exception {
 
-        u.setNombre(u.getNombre().trim());
-        u.setApellido(u.getApellido().trim());
-        u.setEmail(u.getEmail().trim().toLowerCase());
-        u.setTelefono(u.getTelefono() != null ? u.getTelefono().trim() : "");
-        u.setContrasena(u.getContrasena().trim());
+        if (nombre == null || nombre.trim().isEmpty())
+            throw new Exception("El nombre es obligatorio");
+        if (apellido == null || apellido.trim().isEmpty())
+            throw new Exception("El apellido es obligatorio");
+        if (email == null || !email.contains("@") || !email.contains("."))
+            throw new Exception("El email no tiene un formato válido");
+        if (contrasena == null || contrasena.trim().length() < 4)
+            throw new Exception("La contraseña debe tener mínimo 4 caracteres");
+
+        // ✅ El objeto Usuario se crea en el SERVICIO
+        Usuario u = new Usuario();
+        u.setNombre(nombre.trim());
+        u.setApellido(apellido.trim());
+        u.setEmail(email.trim().toLowerCase());
+        u.setTelefono(telefono != null ? telefono.trim() : "");
+        u.setTipoUsuario(tipoUsuario != null ? tipoUsuario : "comprador");
+        u.setContrasena(contrasena.trim());
 
         try {
             return repositorio.insertar(u);
         } catch (SQLException e) {
             if (e.getMessage().contains("duplicate key") || e.getMessage().contains("unique"))
-                throw new Exception("El email " + u.getEmail() + " ya está registrado");
+                throw new Exception("El email " + email + " ya está registrado");
             throw new Exception("Error de base de datos: " + e.getMessage());
         }
     }
@@ -61,18 +68,33 @@ public class UsuarioServicio {
     public Usuario obtenerPorId(int id) throws Exception {
         try {
             Usuario u = repositorio.buscarPorId(id);
-            if (u == null) throw new Exception("Usuario no encontrado con id: " + id);
+            if (u == null) throw new Exception("Usuario no encontrado");
             return u;
         } catch (SQLException e) {
             throw new Exception("Error al buscar usuario: " + e.getMessage());
         }
     }
 
-    public boolean actualizar(Usuario u) throws Exception {
-        if (u.getNombre() == null || u.getNombre().trim().isEmpty())
+    // ✅ Recibe parámetros sueltos y crea el objeto Usuario aquí
+    public boolean actualizar(int id, String nombre, String apellido,
+                              String email, String telefono,
+                              String tipoUsuario, String contrasena) throws Exception {
+
+        if (nombre == null || nombre.trim().isEmpty())
             throw new Exception("El nombre es obligatorio");
-        if (u.getEmail() == null || !u.getEmail().contains("@"))
+        if (email == null || !email.contains("@"))
             throw new Exception("Email inválido");
+
+        // ✅ El objeto Usuario se crea en el SERVICIO
+        Usuario u = new Usuario();
+        u.setId(id);
+        u.setNombre(nombre.trim());
+        u.setApellido(apellido.trim());
+        u.setEmail(email.trim().toLowerCase());
+        u.setTelefono(telefono != null ? telefono.trim() : "");
+        u.setTipoUsuario(tipoUsuario);
+        u.setContrasena(contrasena != null ? contrasena.trim() : "");
+
         try {
             return repositorio.actualizar(u);
         } catch (SQLException e) {
