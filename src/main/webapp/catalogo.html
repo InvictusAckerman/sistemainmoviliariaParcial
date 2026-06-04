@@ -78,58 +78,62 @@
     </div>
 
     <script>
-        const propiedades = [
-            { id: 1,  imagen: "images/casa1.jpg",  titulo: "Casa en El Prado",         precio: 850,  tipo: "Casa",        desc: "4 hab · 3 baños · 220 m² · Barranquilla", destacada: true  },
-            { id: 2,  imagen: "images/casa2.jpg",  titulo: "Casa en Ciudad Jardín",     precio: 650,  tipo: "Casa",        desc: "5 hab · 4 baños · 300 m² · Barranquilla", destacada: false },
-            { id: 3,  imagen: "images/casa3.jpg",  titulo: "Casa en Riomar",            precio: 1200, tipo: "Casa",        desc: "6 hab · 5 baños · 450 m² · Barranquilla", destacada: false },
-            { id: 5,  imagen: "images/casa5.jpg",  titulo: "Apartamento en Manga",      precio: 420,  tipo: "Apartamento", desc: "3 hab · 2 baños · 110 m² · Cartagena",   destacada: false },
-            { id: 6,  imagen: "images/casa6.jpg",  titulo: "Casa en Soledad",           precio: 380,  tipo: "Casa",        desc: "3 hab · 2 baños · 180 m² · Soledad",     destacada: false },
-            { id: 7,  imagen: "images/casa7.jpg",  titulo: "Apartamento en Bocagrande", precio: 520,  tipo: "Apartamento", desc: "2 hab · 2 baños · 90 m² · Cartagena",    destacada: false },
-            { id: 8,  imagen: "images/casa8.jpg",  titulo: "Casa en el Norte",          precio: 750,  tipo: "Casa",        desc: "4 hab · 3 baños · 260 m² · Barranquilla", destacada: false },
-            { id: 10, imagen: "images/casa10.jpg", titulo: "Finca en Sabanalarga",      precio: 900,  tipo: "Finca",       desc: "2 hectáreas · Casa principal · Atlántico", destacada: false }
-        ];
+    const BASE_URL = "http://localhost:8080/sistemadeventasinmobiliaria/propiedades";
 
-        function renderizar(lista) {
-            const grid = document.getElementById('grid');
-            if (lista.length === 0) {
-                grid.innerHTML = "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>No se encontraron propiedades.</p>";
-                return;
-            }
-            grid.innerHTML = lista.map(p => `
-                <div class="prop-card ${p.destacada ? 'destacada' : ''}">
-                    <div class="img-wrap">
-                        ${p.destacada ? "<span class='badge-dest'>Destacada</span>" : ""}
-                        <img src="${p.imagen}" alt="${p.titulo}" onerror="this.style.display='none'">
-                    </div>
-                    <div class="prop-info">
-                        <h4>${p.titulo}</h4>
-                        <div class="precio">$${p.precio.toLocaleString('es-CO')}.000.000</div>
-                        <p>${p.desc}</p>
-                        <a href="detalle.html?id=${p.id}" class="btn-ver">Ver detalles</a>
-                    </div>
+    // Cargar propiedades desde el servlet
+    async function cargarPropiedades(params = "") {
+        try {
+            const res = await fetch(BASE_URL + params);
+            const data = await res.json();
+            renderizar(data);
+        } catch (e) {
+            document.getElementById('grid').innerHTML = 
+                "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>Error al conectar con el servidor.</p>";
+        }
+    }
+
+    function renderizar(lista) {
+        const grid = document.getElementById('grid');
+        if (lista.length === 0) {
+            grid.innerHTML = "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>No se encontraron propiedades.</p>";
+            return;
+        }
+        grid.innerHTML = lista.map((p, i) => `
+            <div class="prop-card ${i === 0 ? 'destacada' : ''}">
+                <div class="img-wrap">
+                    ${i === 0 ? "<span class='badge-dest'>Destacada</span>" : ""}
+                    <img src="images/casa${p.id}.jpg" alt="${p.titulo}" onerror="this.src='images/default.jpg'">
                 </div>
-            `).join('');
+                <div class="prop-info">
+                    <h4>${p.titulo}</h4>
+                    <div class="precio">$${p.precio.toLocaleString('es-CO')}</div>
+                    <p>${p.tipo} · ${p.estado}</p>
+                    <a href="detalle.html?id=${p.id}" class="btn-ver">Ver detalles</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function filtrar() {
+        const tipo   = document.getElementById('tipo').value;
+        const precio = document.getElementById('precio').value;
+
+        if (tipo !== "") {
+            await cargarPropiedades(`?accion=buscarTipo&criterio=${tipo}`);
+        } else if (precio !== "") {
+            // Convertir rangos de precio
+            let precioMax;
+            if (precio === '500')  precioMax = 500000000;
+            if (precio === '1000') precioMax = 1000000000;
+            if (precio === '9999') precioMax = 9999999999;
+            await cargarPropiedades(`?accion=buscarPrecio&criterio=${precioMax}`);
+        } else {
+            await cargarPropiedades();
         }
+    }
 
-        function filtrar() {
-            const texto = document.getElementById('buscar').value.toLowerCase();
-            const tipo  = document.getElementById('tipo').value;
-            const precio = document.getElementById('precio').value;
-
-            let resultado = propiedades.filter(p => {
-                const coincideTexto = p.titulo.toLowerCase().includes(texto) || p.desc.toLowerCase().includes(texto);
-                const coincideTipo  = tipo === '' || p.tipo === tipo;
-                let coincidePrecio  = true;
-                if (precio === '500')  coincidePrecio = p.precio <= 500;
-                if (precio === '1000') coincidePrecio = p.precio > 500 && p.precio <= 1000;
-                if (precio === '9999') coincidePrecio = p.precio > 1000;
-                return coincideTexto && coincideTipo && coincidePrecio;
-            });
-            renderizar(resultado);
-        }
-
-        // Cargar al inicio
-        renderizar(propiedades);
-    </script>
+    // Cargar al inicio
+    cargarPropiedades();
+</script>
 </body>
 </html>

@@ -1,93 +1,164 @@
 package com.micropropiedades.persistencia;
 
-import com.micropropiedades.modelo.*;
+import com.micropropiedades.modelo.Apartamento;
+import com.micropropiedades.modelo.Casa;
+import com.micropropiedades.modelo.Inmueble;
+import com.micropropiedades.modelo.PropiedadDTO;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PropiedadDAO {
 
-    private Connection getConnection() throws SQLException {
-        try {
-            Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/inmobiliaria_db",
-                "postgres",
-                "empanada123"
-            );
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("Driver no encontrado", e);
+    
+    public void insertar(PropiedadDTO dto) throws SQLException {
+        String sqlInmueble = "INSERT INTO inmuebles(titulo, tipo, precio, estado) VALUES (?,?,?,?) RETURNING id";
+
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sqlInmueble)) {
+
+            ps.setString(1, dto.getTitulo());
+            ps.setString(2, dto.getTipo());
+            ps.setDouble(3, dto.getPrecio());
+            ps.setString(4, dto.getEstado());
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int idGenerado = rs.getInt(1);
+
+                if (dto.getTipo().equalsIgnoreCase("Apartamento")) {
+                    String sqlApto = "INSERT INTO apartamentos(id, piso) VALUES (?,?)";
+                    try (PreparedStatement ps2 = con.prepareStatement(sqlApto)) {
+                        ps2.setInt(1, idGenerado);
+                        ps2.setInt(2, dto.getPiso());
+                        ps2.executeUpdate();
+                    }
+                } else if (dto.getTipo().equalsIgnoreCase("Casa")) {
+                    String sqlCasa = "INSERT INTO casas(id, jardin) VALUES (?,?)";
+                    try (PreparedStatement ps2 = con.prepareStatement(sqlCasa)) {
+                        ps2.setInt(1, idGenerado);
+                        ps2.setBoolean(2, dto.isJardin());
+                        ps2.executeUpdate();
+                    }
+                }
+            }
         }
     }
 
-    public boolean insertar(PropiedadDTO p) throws Exception {
-        String sql = "INSERT INTO inmuebles (titulo, tipo, precio, ubicacion, estado) " +
-                     "VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, p.getTitulo());
-            ps.setString(2, p.getTipo());
-            ps.setDouble(3, p.getPrecio());
-            ps.setString(4, p.getUbicacion());
-            ps.setString(5, p.getEstado());
-            return ps.executeUpdate() > 0;
-        }
-    }
+    
+    public List<Inmueble> listarTodos() throws SQLException {
+        List<Inmueble> lista = new ArrayList<>();
+        String sql = "SELECT i.*, a.piso, c.jardin FROM inmuebles i " +
+                     "LEFT JOIN apartamentos a ON i.id = a.id " +
+                     "LEFT JOIN casas c ON i.id = c.id";
 
-    public List<PropiedadDTO> listarTodos() throws Exception {
-        List<PropiedadDTO> lista = new ArrayList<>();
-        String sql = "SELECT * FROM inmuebles ORDER BY id DESC";
-        try (Connection conn = getConnection();
-             Statement st = conn.createStatement();
+        try (Connection con = ConexionDB.getConexion();
+             Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) lista.add(mapear(rs));
+
+            while (rs.next()) {
+                lista.add(mapearInmueble(rs));
+            }
         }
         return lista;
     }
 
-    public PropiedadDTO buscarPorId(int id) throws Exception {
-        String sql = "SELECT * FROM inmuebles WHERE id = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    
+    public Inmueble buscarPorId(int id) throws SQLException {
+        String sql = "SELECT i.*, a.piso, c.jardin FROM inmuebles i " +
+                     "LEFT JOIN apartamentos a ON i.id = a.id " +
+                     "LEFT JOIN casas c ON i.id = c.id " +
+                     "WHERE i.id = ?";
+
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return mapear(rs);
+            if (rs.next()) return mapearInmueble(rs);
         }
         return null;
     }
 
-    public boolean actualizar(PropiedadDTO p) throws Exception {
-        String sql = "UPDATE inmuebles SET titulo=?, tipo=?, precio=?, " +
-                     "ubicacion=?, estado=? WHERE id=?";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, p.getTitulo());
-            ps.setString(2, p.getTipo());
-            ps.setDouble(3, p.getPrecio());
-            ps.setString(4, p.getUbicacion());
-            ps.setString(5, p.getEstado());
-            ps.setInt(6, p.getId());
-            return ps.executeUpdate() > 0;
+    
+    public List<Inmueble> buscarPorTipo(String tipo) throws SQLException {
+        List<Inmueble> lista = new ArrayList<>();
+        String sql = "SELECT i.*, a.piso, c.jardin FROM inmuebles i " +
+                     "LEFT JOIN apartamentos a ON i.id = a.id " +
+                     "LEFT JOIN casas c ON i.id = c.id " +
+                     "WHERE LOWER(i.tipo) = LOWER(?)";
+
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, tipo);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) lista.add(mapearInmueble(rs));
+        }
+        return lista;
+    }
+
+    
+    public List<Inmueble> buscarPorPrecio(double precioMax) throws SQLException {
+        List<Inmueble> lista = new ArrayList<>();
+        String sql = "SELECT i.*, a.piso, c.jardin FROM inmuebles i " +
+                     "LEFT JOIN apartamentos a ON i.id = a.id " +
+                     "LEFT JOIN casas c ON i.id = c.id " +
+                     "WHERE i.precio <= ?";
+
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDouble(1, precioMax);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) lista.add(mapearInmueble(rs));
+        }
+        return lista;
+    }
+
+    
+    public void actualizar(PropiedadDTO dto) throws SQLException {
+        String sql = "UPDATE inmuebles SET titulo=?, tipo=?, precio=?, estado=? WHERE id=?";
+
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, dto.getTitulo());
+            ps.setString(2, dto.getTipo());
+            ps.setDouble(3, dto.getPrecio());
+            ps.setString(4, dto.getEstado());
+            ps.setInt(5, dto.getId());
+            ps.executeUpdate();
         }
     }
 
-    public boolean eliminar(int id) throws Exception {
-        String sql = "DELETE FROM inmuebles WHERE id = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    
+    public void eliminar(int id) throws SQLException {
+        String sql = "DELETE FROM inmuebles WHERE id=?";
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
         }
     }
 
-    private PropiedadDTO mapear(ResultSet rs) throws SQLException {
-        return new PropiedadDTO(
-            rs.getInt("id"),
-            rs.getString("titulo"),
-            rs.getString("tipo"),
-            rs.getDouble("precio"),
-            rs.getString("ubicacion"),
-            rs.getString("estado")
-        );
+    
+    private Inmueble mapearInmueble(ResultSet rs) throws SQLException {
+        String tipo = rs.getString("tipo");
+        Inmueble inmueble;
+
+        if (tipo.equalsIgnoreCase("Apartamento")) {
+            Apartamento a = new Apartamento();
+            a.setPiso(rs.getInt("piso"));
+            inmueble = a;
+        } else {
+            Casa c = new Casa();
+            c.setJardin(rs.getBoolean("jardin"));
+            inmueble = c;
+        }
+
+        inmueble.setId(rs.getInt("id"));
+        inmueble.setTitulo(rs.getString("titulo"));
+        inmueble.setTipo(tipo);
+        inmueble.setPrecio(rs.getDouble("precio"));
+        inmueble.setEstado(rs.getString("estado"));
+
+        return inmueble;
     }
 }

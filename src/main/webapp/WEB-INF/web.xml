@@ -1,43 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
-                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
-    <welcome-file-list>
-        <welcome-file>login.html</welcome-file>
-    </welcome-file-list>
-
-    <!-- ms-usuarios -->
-    <servlet>
-        <servlet-name>UsuarioController</servlet-name>
-        <servlet-class>com.microusuarios.control.UsuarioController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UsuarioController</servlet-name>
-        <url-pattern>/usuarios</url-pattern>
-    </servlet-mapping>
-
-    <!-- ms-propiedades -->
-    <servlet>
-        <servlet-name>PropiedadServlet</servlet-name>
-        <servlet-class>com.micropropiedades.control.PropiedadServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PropiedadServlet</servlet-name>
-        <url-pattern>/propiedades</url-pattern>
-    </servlet-mapping>
-
-    <!-- ms-notificaciones -->
-    <servlet>
-        <servlet-name>NotifServlet</servlet-name>
-        <servlet-class>com.micronotificaciones.control.NotifServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>NotifServlet</servlet-name>
-        <url-pattern>/notificaciones</url-pattern>
-    </servlet-mapping>
 </web-app>

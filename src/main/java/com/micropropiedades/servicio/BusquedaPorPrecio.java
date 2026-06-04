@@ -1,16 +1,17 @@
 package com.micropropiedades.servicio;
 
-import com.micropropiedades.modelo.PropiedadDTO;
+import com.micropropiedades.modelo.Inmueble;
+import com.micropropiedades.persistencia.PropiedadDAO;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BusquedaPorPrecio implements BusquedaStrategy {
 
+    private PropiedadDAO dao = new PropiedadDAO();
+
     @Override
-    public List<PropiedadDTO> buscar(String filtro, List<PropiedadDTO> propiedades) {
-        double maxPrecio = Double.parseDouble(filtro);
-        return propiedades.stream()
-            .filter(p -> p.getPrecio() <= maxPrecio)
-            .collect(Collectors.toList());
+    public List<Inmueble> buscar(String precioMax) throws SQLException {
+        double precio = Double.parseDouble(precioMax);
+        return dao.buscarPorPrecio(precio);
     }
 }

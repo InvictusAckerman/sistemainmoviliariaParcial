@@ -1,15 +1,19 @@
 package com.micropropiedades.persistencia;
 
-import com.micropropiedades.modelo.*;
+import com.micropropiedades.modelo.Apartamento;
+import com.micropropiedades.modelo.Casa;
+import com.micropropiedades.modelo.Inmueble;
 
 public class InmuebleFactory {
 
-    // ✅ Patrón Factory — crea el tipo correcto de inmueble
     public static Inmueble crearInmueble(String tipo) {
         switch (tipo.toLowerCase()) {
-            case "casa":        return new Casa();
-            case "apartamento": return new Apartamento();
-            default:            return new Inmueble();
+            case "apartamento":
+                return new Apartamento();
+            case "casa":
+                return new Casa();
+            default:
+                throw new IllegalArgumentException("Tipo de inmueble no válido: " + tipo);
         }
     }
 }

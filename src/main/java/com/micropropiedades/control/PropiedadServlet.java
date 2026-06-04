@@ -1,10 +1,21 @@
 package com.micropropiedades.control;
 
+import com.micropropiedades.modelo.Inmueble;
+import com.micropropiedades.modelo.PropiedadDTO;
+import com.micropropiedades.servicio.BusquedaPorPrecio;
+import com.micropropiedades.servicio.BusquedaPorTipo;
 import com.micropropiedades.servicio.PropiedadServicio;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import java.io.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.List;
 
+@WebServlet("/propiedades")
 public class PropiedadServlet extends HttpServlet {
 
     private PropiedadServicio servicio = new PropiedadServicio();
@@ -12,76 +23,115 @@ public class PropiedadServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String accion = request.getParameter("accion");
-        if (accion == null) accion = "listar";
-        switch (accion) {
-            case "listar":   listar(request, response);   break;
-            case "eliminar": eliminar(request, response); break;
-            default:         response.sendRedirect("index.html");
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+
+        String accion    = request.getParameter("accion");
+        String criterio  = request.getParameter("criterio");
+
+        try {
+            if (accion == null || accion.isEmpty()) {
+                // Listar todos
+                List<Inmueble> lista = servicio.listarTodos();
+                out.print(listaToJson(lista));
+
+            } else if (accion.equals("buscarTipo")) {
+                servicio.setEstrategia(new BusquedaPorTipo());
+                List<Inmueble> lista = servicio.buscar(criterio);
+                out.print(listaToJson(lista));
+
+            } else if (accion.equals("buscarPrecio")) {
+                servicio.setEstrategia(new BusquedaPorPrecio());
+                List<Inmueble> lista = servicio.buscar(criterio);
+                out.print(listaToJson(lista));
+
+            } else {
+                response.setStatus(400);
+                out.print("{\"error\":\"Acción no reconocida\"}");
+            }
+
+        } catch (SQLException e) {
+            response.setStatus(500);
+            out.print("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+
         String accion = request.getParameter("accion");
-        if ("actualizar".equals(accion)) { actualizar(request, response); return; }
-        registrar(request, response);
-    }
 
-    private void registrar(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
         try {
-            servicio.registrar(
-                req.getParameter("titulo"),
-                req.getParameter("tipo"),
-                Double.parseDouble(req.getParameter("precio")),
-                req.getParameter("ubicacion"),
-                req.getParameter("estado") != null ? req.getParameter("estado") : "disponible"
-            );
-            resp.sendRedirect("PropiedadServlet?accion=listar&exito=Propiedad+registrada");
-        } catch (Exception e) {
-            resp.sendRedirect("PropiedadServlet?accion=listar&error=" + e.getMessage());
+            if (accion == null) accion = "registrar";
+
+            switch (accion) {
+                case "registrar": {
+                    PropiedadDTO dto = new PropiedadDTO();
+                    dto.setTitulo(request.getParameter("titulo"));
+                    dto.setTipo(request.getParameter("tipo"));
+                    dto.setPrecio(Double.parseDouble(request.getParameter("precio")));
+                    dto.setEstado(request.getParameter("estado"));
+
+                    if (dto.getTipo().equalsIgnoreCase("Apartamento")) {
+                        dto.setPiso(Integer.parseInt(request.getParameter("piso")));
+                    } else if (dto.getTipo().equalsIgnoreCase("Casa")) {
+                        dto.setJardin(Boolean.parseBoolean(request.getParameter("jardin")));
+                    }
+
+                    servicio.registrar(dto);
+                    out.print("{\"mensaje\":\"Inmueble registrado correctamente\"}");
+                    break;
+                }
+                case "actualizar": {
+                    PropiedadDTO dto = new PropiedadDTO();
+                    dto.setId(Integer.parseInt(request.getParameter("id")));
+                    dto.setTitulo(request.getParameter("titulo"));
+                    dto.setTipo(request.getParameter("tipo"));
+                    dto.setPrecio(Double.parseDouble(request.getParameter("precio")));
+                    dto.setEstado(request.getParameter("estado"));
+
+                    servicio.actualizar(dto);
+                    out.print("{\"mensaje\":\"Inmueble actualizado correctamente\"}");
+                    break;
+                }
+                case "eliminar": {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    servicio.eliminar(id);
+                    out.print("{\"mensaje\":\"Inmueble eliminado correctamente\"}");
+                    break;
+                }
+                default:
+                    response.setStatus(400);
+                    out.print("{\"error\":\"Acción no reconocida\"}");
+            }
+
+        } catch (SQLException e) {
+            response.setStatus(500);
+            out.print("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
-    private void listar(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        try {
-            req.setAttribute("propiedades", servicio.listarTodos());
-            req.setAttribute("exito", req.getParameter("exito"));
-            req.setAttribute("error", req.getParameter("error"));
-            req.getRequestDispatcher("ListarPropiedades.jsp").forward(req, resp);
-        } catch (Exception e) {
-            resp.sendRedirect("index.html?error=" + e.getMessage());
+    private String listaToJson(List<Inmueble> lista) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < lista.size(); i++) {
+            Inmueble inm = lista.get(i);
+            sb.append("{");
+            sb.append("\"id\":").append(inm.getId()).append(",");
+            sb.append("\"titulo\":\"").append(inm.getTitulo()).append("\",");
+            sb.append("\"tipo\":\"").append(inm.getTipo()).append("\",");
+            sb.append("\"precio\":").append(inm.getPrecio()).append(",");
+            sb.append("\"estado\":\"").append(inm.getEstado()).append("\"");
+            sb.append("}");
+            if (i < lista.size() - 1) sb.append(",");
         }
-    }
-
-    private void actualizar(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
-        try {
-            servicio.actualizar(
-                Integer.parseInt(req.getParameter("id")),
-                req.getParameter("titulo"),
-                req.getParameter("tipo"),
-                Double.parseDouble(req.getParameter("precio")),
-                req.getParameter("ubicacion"),
-                req.getParameter("estado")
-            );
-            resp.sendRedirect("PropiedadServlet?accion=listar&exito=Propiedad+actualizada");
-        } catch (Exception e) {
-            resp.sendRedirect("PropiedadServlet?accion=listar&error=" + e.getMessage());
-        }
-    }
-
-    private void eliminar(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
-        try {
-            servicio.eliminar(Integer.parseInt(req.getParameter("id")));
-            resp.sendRedirect("PropiedadServlet?accion=listar&exito=Propiedad+eliminada");
-        } catch (Exception e) {
-            resp.sendRedirect("PropiedadServlet?accion=listar&error=" + e.getMessage());
-        }
+        sb.append("]");
+        return sb.toString();
     }
 }

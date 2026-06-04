@@ -1,8 +1,9 @@
 package com.micropropiedades.servicio;
 
-import com.micropropiedades.modelo.PropiedadDTO;
+import com.micropropiedades.modelo.Inmueble;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface BusquedaStrategy {
-    List<PropiedadDTO> buscar(String filtro, List<PropiedadDTO> propiedades);
+    List<Inmueble> buscar(String criterio) throws SQLException;
 }

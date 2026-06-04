@@ -1,57 +1,45 @@
 package com.micropropiedades.servicio;
 
-import com.micropropiedades.modelo.*;
-import com.micropropiedades.persistencia.*;
+import com.micropropiedades.modelo.Inmueble;
+import com.micropropiedades.modelo.PropiedadDTO;
+import com.micropropiedades.persistencia.PropiedadDAO;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PropiedadServicio {
 
-    private final PropiedadDAO dao = new PropiedadDAO();
+    private PropiedadDAO dao = new PropiedadDAO();
+    private BusquedaStrategy estrategia;
 
-    public boolean registrar(String titulo, String tipo, double precio,
-                             String ubicacion, String estado) throws Exception {
-        // ✅ Factory crea el tipo correcto
-        Inmueble inmueble = InmuebleFactory.crearInmueble(tipo);
-        inmueble.setTitulo(titulo);
-        inmueble.setPrecio(precio);
-        inmueble.setUbicacion(ubicacion);
-        inmueble.setEstado(estado);
-
-        PropiedadDTO dto = new PropiedadDTO();
-        dto.setTitulo(inmueble.getTitulo());
-        dto.setTipo(inmueble.getTipo());
-        dto.setPrecio(inmueble.getPrecio());
-        dto.setUbicacion(inmueble.getUbicacion());
-        dto.setEstado(inmueble.getEstado());
-
-        return dao.insertar(dto);
+    // Permite cambiar la estrategia de búsqueda en tiempo de ejecución
+    public void setEstrategia(BusquedaStrategy estrategia) {
+        this.estrategia = estrategia;
     }
 
-    public List<PropiedadDTO> listarTodos() throws Exception {
+    public void registrar(PropiedadDTO dto) throws SQLException {
+        dao.insertar(dto);
+    }
+
+    public List<Inmueble> listarTodos() throws SQLException {
         return dao.listarTodos();
     }
 
-    // ✅ Strategy — elige algoritmo de búsqueda según filtro
-    public List<PropiedadDTO> buscar(String tipoBusqueda, String valor) throws Exception {
-        List<PropiedadDTO> todas = dao.listarTodos();
-        BusquedaStrategy strategy;
+    public Inmueble buscarPorId(int id) throws SQLException {
+        return dao.buscarPorId(id);
+    }
 
-        switch (tipoBusqueda) {
-            case "precio": strategy = new BusquedaPorPrecio(); break;
-            case "tipo":   strategy = new BusquedaPorTipo();   break;
-            default:       return todas;
+    public List<Inmueble> buscar(String criterio) throws SQLException {
+        if (estrategia == null) {
+            throw new IllegalStateException("No se ha definido una estrategia de búsqueda");
         }
-        return strategy.buscar(valor, todas);
+        return estrategia.buscar(criterio);
     }
 
-    public boolean actualizar(int id, String titulo, String tipo,
-                              double precio, String ubicacion,
-                              String estado) throws Exception {
-        PropiedadDTO dto = new PropiedadDTO(id, titulo, tipo, precio, ubicacion, estado);
-        return dao.actualizar(dto);
+    public void actualizar(PropiedadDTO dto) throws SQLException {
+        dao.actualizar(dto);
     }
 
-    public boolean eliminar(int id) throws Exception {
-        return dao.eliminar(id);
+    public void eliminar(int id) throws SQLException {
+        dao.eliminar(id);
     }
 }
