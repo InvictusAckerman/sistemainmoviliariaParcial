@@ -7,236 +7,647 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; color: #1a1a1a; }
-        nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 40px; background: #1e1b4b; position: sticky; top: 0; z-index: 100; }
-        .nav-logo { display: flex; align-items: center; gap: 8px; color: white; font-size: 18px; font-weight: 600; text-decoration: none; }
-        .nav-logo-icon { width: 30px; height: 30px; background: #6D28D9; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+        /* ── Navbar ── */
+        nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 40px; background: #1e1b4b;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 8px;
+            color: white; font-size: 18px; font-weight: 600; text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 30px; height: 30px; background: #6D28D9;
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+        }
         .nav-links { display: flex; gap: 8px; align-items: center; }
-        .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+        .nav-links a {
+            color: rgba(255,255,255,0.8); text-decoration: none;
+            padding: 7px 14px; border-radius: 6px; font-size: 14px;
+        }
         .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
-        .nav-links .btn-nav { background: #6D28D9; color: white; padding: 7px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; }
-        .busqueda-bar { background: white; padding: 20px 40px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #e5e7eb; }
-        .busqueda-bar input { flex: 1; padding: 11px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; }
+        .nav-links .btn-nav {
+            background: #6D28D9; color: white;
+            padding: 7px 16px; border-radius: 6px;
+            font-size: 14px; font-weight: 600; text-decoration: none;
+        }
+
+        /* ── Campana de notificaciones ── */
+        .notif-wrapper {
+            position: relative;
+        }
+        .notif-btn {
+            background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,0.8); padding: 7px 10px;
+            border-radius: 6px; font-size: 20px;
+            display: flex; align-items: center; gap: 6px;
+            transition: background 0.2s;
+        }
+        .notif-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .notif-badge {
+            position: absolute; top: 2px; right: 2px;
+            background: #EF4444; color: white;
+            font-size: 10px; font-weight: 700;
+            min-width: 16px; height: 16px;
+            border-radius: 999px; display: none;
+            align-items: center; justify-content: center;
+            padding: 0 4px;
+        }
+        .notif-badge.visible { display: flex; }
+
+        /* ── Panel de notificaciones ── */
+        .notif-panel {
+            display: none;
+            position: absolute; top: calc(100% + 10px); right: 0;
+            width: 360px; background: white;
+            border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            z-index: 9999; overflow: hidden;
+        }
+        .notif-panel.abierto { display: block; }
+
+        .notif-panel-header {
+            padding: 16px 20px; border-bottom: 1px solid #f3f4f6;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .notif-panel-header h4 { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+        .btn-marcar-todas {
+            background: none; border: none; color: #6D28D9;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .btn-marcar-todas:hover { text-decoration: underline; }
+
+        .notif-lista {
+            max-height: 380px; overflow-y: auto;
+        }
+        .notif-item {
+            padding: 14px 20px; border-bottom: 1px solid #f9fafb;
+            display: flex; gap: 12px; align-items: flex-start;
+            transition: background 0.15s; cursor: default;
+        }
+        .notif-item:hover { background: #fafafa; }
+        .notif-item.no-leida { background: #f5f3ff; border-left: 3px solid #6D28D9; }
+        .notif-item.no-leida:hover { background: #ede9fe; }
+
+        .notif-icono {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #ede9fe; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .notif-contenido { flex: 1; }
+        .notif-contenido p { font-size: 13px; color: #374151; line-height: 1.4; margin-bottom: 4px; }
+        .notif-contenido span { font-size: 11px; color: #9ca3af; }
+
+        .notif-empty {
+            padding: 40px 20px; text-align: center;
+            color: #9ca3af; font-size: 14px;
+        }
+
+        .notif-panel-footer {
+            padding: 12px 20px; border-top: 1px solid #f3f4f6;
+            text-align: center;
+        }
+        .notif-panel-footer a {
+            font-size: 13px; color: #6D28D9; font-weight: 600; text-decoration: none;
+        }
+        .notif-panel-footer a:hover { text-decoration: underline; }
+
+        /* ── Barra de búsqueda ── */
+        .busqueda-bar {
+            background: white; padding: 20px 40px;
+            display: flex; gap: 12px; align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .busqueda-bar input {
+            flex: 1; padding: 11px 16px;
+            border: 1px solid #d1d5db; border-radius: 8px;
+            font-size: 14px; outline: none;
+        }
         .busqueda-bar input:focus { border-color: #6D28D9; }
-        .busqueda-bar select { padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; background: white; }
-        .busqueda-bar button { padding: 11px 24px; background: #6D28D9; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .busqueda-bar select {
+            padding: 11px 14px; border: 1px solid #d1d5db;
+            border-radius: 8px; font-size: 14px; outline: none; background: white;
+        }
+        .busqueda-bar button {
+            padding: 11px 24px; background: #6D28D9; color: white;
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+        }
         .busqueda-bar button:hover { background: #5b21b6; }
+
+        /* ── Contenido ── */
         .contenido { padding: 32px 40px; }
-        .opciones-titulo { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
         .grid-catalogo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .prop-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; }
+
+        .prop-card {
+            background: white; border-radius: 12px;
+            border: 1px solid #e5e7eb; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
         .prop-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
         .prop-card.destacada { border: 2px solid #6D28D9; }
+
         .img-wrap { position: relative; width: 100%; height: 200px; overflow: hidden; }
         .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .badge-dest { position: absolute; top: 10px; left: 10px; background: #6D28D9; color: white; font-size: 10px; padding: 3px 8px; border-radius: 4px; z-index: 1; }
+        .badge-dest {
+            position: absolute; top: 10px; left: 10px;
+            background: #6D28D9; color: white;
+            font-size: 10px; padding: 3px 8px; border-radius: 4px; z-index: 1;
+        }
         .prop-info { padding: 16px; }
         .prop-info h4 { font-size: 15px; color: #1a1a1a; margin-bottom: 4px; font-weight: 600; }
         .prop-info .precio { font-size: 16px; color: #6D28D9; font-weight: 700; margin-bottom: 6px; }
         .prop-info p { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
-        .btn-ver { display: block; padding: 9px; background: #6D28D9; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-ver {
+            display: block; padding: 9px; background: #6D28D9; color: white;
+            border: none; border-radius: 6px; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-align: center; text-decoration: none;
+        }
         .btn-ver:hover { background: #5b21b6; }
+        .btn-editar {
+            display: block; padding: 9px; background: #f3f4f6;
+            border: 1px solid #d1d5db; border-radius: 6px;
+            font-size: 13px; font-weight: 600; cursor: pointer; text-align: center;
+        }
+        .btn-editar:hover { background: #e5e7eb; }
+
+        /* ── Modales ── */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 999;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.activo { display: flex; }
+        .modal-box {
+            background: white; border-radius: 12px; padding: 32px;
+            width: 480px; max-width: 90%; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-box h3 { margin-bottom: 20px; color: #1a1a1a; font-size: 18px; }
+        .form-col { display: flex; flex-direction: column; gap: 12px; }
+        .form-col input, .form-col select {
+            padding: 10px; border: 1px solid #d1d5db;
+            border-radius: 8px; font-size: 14px; outline: none;
+        }
+        .form-col input:focus, .form-col select:focus { border-color: #6D28D9; }
+        .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-cancelar {
+            flex: 1; padding: 10px; background: #f3f4f6;
+            border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
+        }
+        .btn-guardar {
+            flex: 1; padding: 10px; background: #6D28D9; color: white;
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+        .btn-guardar:hover { background: #5b21b6; }
+
+        /* ── Toast ── */
+        #toast {
+            position: fixed; bottom: 28px; right: 28px;
+            background: #1e1b4b; color: white;
+            padding: 12px 20px; border-radius: 8px;
+            font-size: 14px; font-weight: 500;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s; z-index: 9999;
+        }
+        #toast.visible { opacity: 1; }
     </style>
 </head>
 <body>
-    <nav>
-        <a class="nav-logo" href="index.html">
-            <div class="nav-logo-icon">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" fill="white"/>
-                </svg>
-            </div>
-            Inmobiliaria
-        </a>
-        <div class="nav-links">
-            <a href="index.html">Inicio</a>
-            <a href="catalogo.html">Catálogo</a>
-            <a href="contactoAgente.html">Contacto</a>
-            <a href="UsuarioServlet" class="btn-nav">Registrarse</a>
+
+<!-- ══ Navbar ══════════════════════════════════════════════ -->
+<nav>
+    <a class="nav-logo" href="index.html">
+        <div class="nav-logo-icon">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" fill="white"/>
+            </svg>
         </div>
-    </nav>
+        Inmobiliaria
+    </a>
+    <div class="nav-links">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="contactoAgente.html">Contacto</a>
 
-    <div class="busqueda-bar">
-        <input type="text" id="buscar" placeholder="Buscar por ciudad, barrio o referencia...">
-        <select id="tipo">
-            <option value="">Todos los tipos</option>
-            <option value="Casa">Casa</option>
-            <option value="Apartamento">Apartamento</option>
-            <option value="Finca">Finca</option>
-        </select>
-        <select id="precio">
-            <option value="">Cualquier precio</option>
-            <option value="500">Hasta $500M</option>
-            <option value="1000">$500M - $1.000M</option>
-            <option value="9999">Más de $1.000M</option>
-        </select>
-        <button onclick="filtrar()">Aplicar filtros</button>
-    </div>
-
-    <div class="contenido">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <p class="opciones-titulo" style="margin-bottom:0;">Propiedades disponibles</p>
-            <button onclick="abrirModal()" style="padding:10px 20px; background:#6D28D9; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">+ Nueva propiedad</button>
-        </div>
-
-        <div id="grid" class="grid-catalogo">
-            <p style="color:#9ca3af; grid-column:1/-1; text-align:center; padding:40px;">Cargando propiedades...</p>
-        </div>
-    </div>
-
-    <!-- Modal nueva propiedad -->
-    <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
-        <div style="background:white; border-radius:12px; padding:32px; width:480px; max-width:90%;">
-            <h3 style="margin-bottom:20px; color:#1a1a1a;">Nueva Propiedad</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <input id="f-titulo" type="text" placeholder="Título *" style="padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
-                <select id="f-tipo" onchange="toggleCampos()" style="padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
-                    <option value="">Seleccionar tipo *</option>
-                    <option value="Apartamento">Apartamento</option>
-                    <option value="Casa">Casa</option>
-                </select>
-                <input id="f-precio" type="number" placeholder="Precio *" style="padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
-                <select id="f-estado" style="padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
-                    <option value="disponible">Disponible</option>
-                    <option value="vendido">Vendido</option>
-                </select>
-                <div id="campo-piso" style="display:none;">
-                    <input id="f-piso" type="number" placeholder="Número de piso" style="padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; width:100%;">
+        <!-- ✅ Campana de notificaciones -->
+        <div class="notif-wrapper">
+            <button class="notif-btn" onclick="togglePanel()" title="Notificaciones">
+                🔔
+                <span id="notif-badge" class="notif-badge"></span>
+            </button>
+            <div class="notif-panel" id="notif-panel">
+                <div class="notif-panel-header">
+                    <h4>🔔 Notificaciones</h4>
+                    <button class="btn-marcar-todas" onclick="marcarTodas()">Marcar todas como leídas</button>
                 </div>
-                <div id="campo-jardin" style="display:none;">
-                    <label style="font-size:14px; color:#374151;">
-                        <input id="f-jardin" type="checkbox"> ¿Tiene jardín?
-                    </label>
+                <div class="notif-lista" id="notif-lista">
+                    <div class="notif-empty">Cargando...</div>
+                </div>
+                <div class="notif-panel-footer">
+                    <a href="#" onclick="cargarNotificaciones()">↺ Actualizar</a>
                 </div>
             </div>
-            <div id="modal-error" style="color:red; font-size:13px; margin-top:8px; display:none;"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="cerrarModal()" style="flex:1; padding:10px; background:#f3f4f6; border:none; border-radius:8px; font-size:14px; cursor:pointer;">Cancelar</button>
-                <button onclick="guardarPropiedad()" style="flex:1; padding:10px; background:#6D28D9; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Guardar</button>
+        </div>
+
+        <a href="UsuarioController" class="btn-nav">Registrarse</a>
+    </div>
+</nav>
+
+<!-- ══ Barra de búsqueda ════════════════════════════════════ -->
+<div class="busqueda-bar">
+    <input type="text" id="buscar" placeholder="Buscar por ciudad, barrio o referencia...">
+    <select id="tipo">
+        <option value="">Todos los tipos</option>
+        <option value="Casa">Casa</option>
+        <option value="Apartamento">Apartamento</option>
+    </select>
+    <select id="precio">
+        <option value="">Cualquier precio</option>
+        <option value="500">Hasta $500M</option>
+        <option value="1000">$500M - $1.000M</option>
+        <option value="9999">Más de $1.000M</option>
+    </select>
+    <button onclick="filtrar()">Aplicar filtros</button>
+</div>
+
+<!-- ══ Contenido ════════════════════════════════════════════ -->
+<div class="contenido">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <p style="font-size:18px; font-weight:600;">Propiedades disponibles</p>
+        <button onclick="abrirModal()"
+            style="padding:10px 20px; background:#6D28D9; color:white; border:none;
+                   border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
+            + Nueva propiedad
+        </button>
+    </div>
+    <div id="grid" class="grid-catalogo">
+        <p style="color:#9ca3af; grid-column:1/-1; text-align:center; padding:40px;">Cargando propiedades...</p>
+    </div>
+</div>
+
+<!-- ══ MODAL REGISTRAR ══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-box">
+        <h3>Nueva Propiedad</h3>
+        <div class="form-col">
+            <input id="f-titulo" type="text" placeholder="Título *">
+            <select id="f-tipo" onchange="toggleCampos()">
+                <option value="">Seleccionar tipo *</option>
+                <option value="Apartamento">Apartamento</option>
+                <option value="Casa">Casa</option>
+            </select>
+            <input id="f-precio" type="number" placeholder="Precio *">
+            <select id="f-estado">
+                <option value="disponible">Disponible</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="vendido">Vendido</option>
+                <option value="rechazado">Rechazado</option>
+            </select>
+            <div id="campo-piso" style="display:none;">
+                <input id="f-piso" type="number" placeholder="Número de piso"
+                    style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+            </div>
+            <div id="campo-jardin" style="display:none;">
+                <label style="font-size:14px; color:#374151;">
+                    <input id="f-jardin" type="checkbox"> ¿Tiene jardín?
+                </label>
             </div>
         </div>
+        <div id="modal-error" style="color:red; font-size:13px; margin-top:8px; display:none;"></div>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-guardar"  onclick="guardarPropiedad()">Guardar</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        const BASE_URL = "http://localhost:8080/sistemadeventasinmobiliaria/propiedades";
+<!-- ══ MODAL EDITAR ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-editar">
+    <div class="modal-box">
+        <h3>✏️ Editar Propiedad</h3>
+        <div class="form-col">
+            <input id="e-titulo" type="text" placeholder="Título *">
+            <select id="e-tipo">
+                <option value="Apartamento">Apartamento</option>
+                <option value="Casa">Casa</option>
+            </select>
+            <input id="e-precio" type="number" placeholder="Precio *">
+            <select id="e-estado">
+                <option value="disponible">Disponible</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="vendido">Vendido</option>
+                <option value="rechazado">Rechazado</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrarModalEditar()">Cancelar</button>
+            <button class="btn-guardar"  onclick="guardarEdicion()">Guardar cambios</button>
+        </div>
+    </div>
+</div>
 
-        async function cargarPropiedades(params = "") {
-            try {
-                const res = await fetch(BASE_URL + params);
-                const data = await res.json();
-                renderizar(data);
-            } catch (e) {
-                document.getElementById('grid').innerHTML =
-                    "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>Error al conectar con el servidor.</p>";
-            }
+<div id="toast"></div>
+
+<script>
+    const BASE_URL   = "http://localhost:8080/sistemadeventasinmobiliaria/propiedades";
+    const NOTIF_URL  = "http://localhost:8080/sistemadeventasinmobiliaria/api/notificaciones";
+
+    let idEditando   = null;
+    let panelAbierto = false;
+
+    // ── Inicio ────────────────────────────────────────────────
+    cargarPropiedades();
+    cargarNotificaciones();
+    // Refresca notificaciones cada 30 segundos automáticamente
+    setInterval(cargarNotificaciones, 30000);
+
+    // Cerrar panel si se hace clic fuera
+    document.addEventListener('click', function(e) {
+        var wrapper = document.querySelector('.notif-wrapper');
+        if (panelAbierto && !wrapper.contains(e.target)) {
+            cerrarPanel();
+        }
+    });
+
+    // ══ PROPIEDADES ══════════════════════════════════════════
+
+    async function cargarPropiedades(params) {
+        params = params || "";
+        try {
+            var res  = await fetch(BASE_URL + params);
+            var data = await res.json();
+            renderizar(data);
+        } catch (e) {
+            document.getElementById('grid').innerHTML =
+                "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>Error al conectar con el servidor.</p>";
+        }
+    }
+
+    function renderizar(lista) {
+        var grid = document.getElementById('grid');
+        if (!lista || lista.length === 0) {
+            grid.innerHTML = "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>No se encontraron propiedades.</p>";
+            return;
+        }
+        grid.innerHTML = lista.map(function(p, i) {
+            return '<div class="prop-card ' + (i === 0 ? 'destacada' : '') + '">'
+                + '<div class="img-wrap">'
+                + (i === 0 ? "<span class='badge-dest'>Destacada</span>" : "")
+                + '<img src="images/casa' + p.id + '.jpg" alt="' + p.titulo + '" onerror="this.src=\'images/default.jpg\'">'
+                + '</div>'
+                + '<div class="prop-info">'
+                + '<h4>' + p.titulo + '</h4>'
+                + '<div class="precio">$' + Number(p.precio).toLocaleString('es-CO') + '</div>'
+                + '<p>' + p.tipo + ' · ' + p.estado + '</p>'
+                + '<div style="display:flex; gap:8px;">'
+                + '<a href="detalle.html?id=' + p.id + '" class="btn-ver" style="flex:1;">Ver detalles</a>'
+                + '<button class="btn-editar" style="flex:1;" onclick="abrirModalEditar(' + p.id + ',\'' + esc(p.titulo) + '\',\'' + p.tipo + '\',' + p.precio + ',\'' + p.estado + '\')">'
+                + '✏️ Editar</button>'
+                + '</div>'
+                + '</div>'
+                + '</div>';
+        }).join('');
+    }
+
+    async function filtrar() {
+        var tipo  = document.getElementById('tipo').value;
+        var precio = document.getElementById('precio').value;
+        if (tipo !== "") {
+            await cargarPropiedades("?accion=buscarTipo&criterio=" + tipo);
+        } else if (precio !== "") {
+            var precioMax;
+            if (precio === '500')  precioMax = 500000000;
+            if (precio === '1000') precioMax = 1000000000;
+            if (precio === '9999') precioMax = 9999999999;
+            await cargarPropiedades("?accion=buscarPrecio&criterio=" + precioMax);
+        } else {
+            await cargarPropiedades();
+        }
+    }
+
+    // ══ NOTIFICACIONES ═══════════════════════════════════════
+
+    async function cargarNotificaciones() {
+        try {
+            var res  = await fetch(NOTIF_URL);
+            var lista = await res.json();
+            renderizarNotificaciones(lista);
+        } catch (e) {
+            document.getElementById('notif-lista').innerHTML =
+                '<div class="notif-empty">No se pudo cargar las notificaciones.</div>';
+        }
+    }
+
+    function renderizarNotificaciones(lista) {
+        var badge  = document.getElementById('notif-badge');
+        var contenedor = document.getElementById('notif-lista');
+
+        if (!lista || lista.length === 0) {
+            badge.classList.remove('visible');
+            contenedor.innerHTML = '<div class="notif-empty">📭 Sin notificaciones por ahora.</div>';
+            return;
         }
 
-        function renderizar(lista) {
-            const grid = document.getElementById('grid');
-            if (!lista || lista.length === 0) {
-                grid.innerHTML = "<p style='color:#9ca3af;grid-column:1/-1;text-align:center;padding:40px;'>No se encontraron propiedades.</p>";
-                return;
-            }
-            grid.innerHTML = lista.map((p, i) => `
-                <div class="prop-card ${i === 0 ? 'destacada' : ''}">
-                    <div class="img-wrap">
-                        ${i === 0 ? "<span class='badge-dest'>Destacada</span>" : ""}
-                        <img src="images/casa${p.id}.jpg" alt="${p.titulo}" onerror="this.src='images/default.jpg'">
-                    </div>
-                    <div class="prop-info">
-                        <h4>${p.titulo}</h4>
-                        <div class="precio">$${p.precio.toLocaleString('es-CO')}</div>
-                        <p>${p.tipo} · ${p.estado}</p>
-                        <a href="detalle.html?id=${p.id}" class="btn-ver">Ver detalles</a>
-                    </div>
-                </div>
-            `).join('');
+        // Contar no leídas
+        var noLeidas = lista.filter(function(n) { return !n.leida; }).length;
+        if (noLeidas > 0) {
+            badge.textContent = noLeidas > 9 ? '9+' : noLeidas;
+            badge.classList.add('visible');
+        } else {
+            badge.classList.remove('visible');
         }
 
-        async function filtrar() {
-            const tipo  = document.getElementById('tipo').value;
-            const precio = document.getElementById('precio').value;
-            if (tipo !== "") {
-                await cargarPropiedades(`?accion=buscarTipo&criterio=${tipo}`);
-            } else if (precio !== "") {
-                let precioMax;
-                if (precio === '500')  precioMax = 500000000;
-                if (precio === '1000') precioMax = 1000000000;
-                if (precio === '9999') precioMax = 9999999999;
-                await cargarPropiedades(`?accion=buscarPrecio&criterio=${precioMax}`);
+        // Ordenar: no leídas primero
+        lista.sort(function(a, b) {
+            if (a.leida === b.leida) return 0;
+            return a.leida ? 1 : -1;
+        });
+
+        contenedor.innerHTML = lista.map(function(n) {
+            var fecha = n.createdAt ? new Date(n.createdAt).toLocaleString('es-CO') : '';
+            return '<div class="notif-item ' + (!n.leida ? 'no-leida' : '') + '" onclick="marcarLeida(\'' + n.id + '\', this)">'
+                + '<div class="notif-icono">🏠</div>'
+                + '<div class="notif-contenido">'
+                + '<p>' + (n.mensaje || '') + '</p>'
+                + '<span>' + fecha + '</span>'
+                + '</div>'
+                + '</div>';
+        }).join('');
+    }
+
+    function togglePanel() {
+        if (panelAbierto) {
+            cerrarPanel();
+        } else {
+            document.getElementById('notif-panel').classList.add('abierto');
+            panelAbierto = true;
+            cargarNotificaciones();
+        }
+    }
+
+    function cerrarPanel() {
+        document.getElementById('notif-panel').classList.remove('abierto');
+        panelAbierto = false;
+    }
+
+    async function marcarLeida(id, elemento) {
+        if (!id) return;
+        try {
+            await fetch(NOTIF_URL + "?id=" + id, { method: 'PUT' });
+            if (elemento) {
+                elemento.classList.remove('no-leida');
+            }
+            cargarNotificaciones();
+        } catch (e) {
+            console.error('Error al marcar como leída:', e);
+        }
+    }
+
+    async function marcarTodas() {
+        var items = document.querySelectorAll('.notif-item.no-leida');
+        var ids   = [];
+        items.forEach(function(el) {
+            var onclick = el.getAttribute('onclick');
+            var match   = onclick.match(/'([a-f0-9]{24})'/);
+            if (match) ids.push(match[1]);
+        });
+        for (var i = 0; i < ids.length; i++) {
+            await fetch(NOTIF_URL + "?id=" + ids[i], { method: 'PUT' });
+        }
+        cargarNotificaciones();
+        mostrarToast('✅ Todas marcadas como leídas');
+    }
+
+    // ══ MODAL REGISTRAR ══════════════════════════════════════
+
+    function abrirModal() {
+        document.getElementById('f-titulo').value  = '';
+        document.getElementById('f-tipo').value    = '';
+        document.getElementById('f-precio').value  = '';
+        document.getElementById('f-estado').value  = 'disponible';
+        document.getElementById('f-piso').value    = '';
+        document.getElementById('f-jardin').checked = false;
+        document.getElementById('modal-error').style.display = 'none';
+        toggleCampos();
+        document.getElementById('modal').classList.add('activo');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal').classList.remove('activo');
+    }
+
+    function toggleCampos() {
+        var tipo = document.getElementById('f-tipo').value;
+        document.getElementById('campo-piso').style.display   = tipo === 'Apartamento' ? 'block' : 'none';
+        document.getElementById('campo-jardin').style.display = tipo === 'Casa'        ? 'block' : 'none';
+    }
+
+    async function guardarPropiedad() {
+        var titulo   = document.getElementById('f-titulo').value.trim();
+        var tipo     = document.getElementById('f-tipo').value;
+        var precio   = document.getElementById('f-precio').value;
+        var estado   = document.getElementById('f-estado').value;
+        var errorDiv = document.getElementById('modal-error');
+
+        if (!titulo || !tipo || !precio) {
+            errorDiv.textContent = 'Por favor completa todos los campos obligatorios.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        var params = new URLSearchParams();
+        params.append('accion',  'registrar');
+        params.append('titulo',  titulo);
+        params.append('tipo',    tipo);
+        params.append('precio',  precio);
+        params.append('estado',  estado);
+        if (tipo === 'Apartamento') params.append('piso', document.getElementById('f-piso').value || '1');
+        if (tipo === 'Casa')        params.append('jardin', document.getElementById('f-jardin').checked);
+
+        try {
+            var res  = await fetch(BASE_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+            var data = await res.json();
+            if (data.mensaje) {
+                cerrarModal();
+                cargarPropiedades();
+                mostrarToast('✅ ' + data.mensaje);
             } else {
-                await cargarPropiedades();
-            }
-        }
-
-        function abrirModal() {
-            document.getElementById('modal').style.display = 'flex';
-            document.getElementById('f-titulo').value = '';
-            document.getElementById('f-tipo').value = '';
-            document.getElementById('f-precio').value = '';
-            document.getElementById('f-estado').value = 'disponible';
-            document.getElementById('f-piso').value = '';
-            document.getElementById('f-jardin').checked = false;
-            document.getElementById('modal-error').style.display = 'none';
-            toggleCampos();
-        }
-
-        function cerrarModal() {
-            document.getElementById('modal').style.display = 'none';
-        }
-
-        function toggleCampos() {
-            const tipo = document.getElementById('f-tipo').value;
-            document.getElementById('campo-piso').style.display   = tipo === 'Apartamento' ? 'block' : 'none';
-            document.getElementById('campo-jardin').style.display = tipo === 'Casa'        ? 'block' : 'none';
-        }
-
-        async function guardarPropiedad() {
-            const titulo   = document.getElementById('f-titulo').value.trim();
-            const tipo     = document.getElementById('f-tipo').value;
-            const precio   = document.getElementById('f-precio').value;
-            const estado   = document.getElementById('f-estado').value;
-            const errorDiv = document.getElementById('modal-error');
-
-            if (!titulo || !tipo || !precio) {
-                errorDiv.textContent = 'Por favor completa todos los campos obligatorios.';
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            const params = new URLSearchParams();
-            params.append('accion', 'registrar');
-            params.append('titulo', titulo);
-            params.append('tipo', tipo);
-            params.append('precio', precio);
-            params.append('estado', estado);
-
-            if (tipo === 'Apartamento') {
-                params.append('piso', document.getElementById('f-piso').value || '1');
-            } else if (tipo === 'Casa') {
-                params.append('jardin', document.getElementById('f-jardin').checked);
-            }
-
-            try {
-                const res = await fetch(BASE_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params.toString()
-                });
-                const data = await res.json();
-                if (data.mensaje) {
-                    cerrarModal();
-                    cargarPropiedades();
-                } else {
-                    errorDiv.textContent = data.error || 'Error al guardar.';
-                    errorDiv.style.display = 'block';
-                }
-            } catch (e) {
-                errorDiv.textContent = 'Error al conectar con el servidor.';
+                errorDiv.textContent = data.error || 'Error al guardar.';
                 errorDiv.style.display = 'block';
             }
+        } catch (e) {
+            errorDiv.textContent = 'Error al conectar con el servidor.';
+            errorDiv.style.display = 'block';
         }
+    }
 
-        cargarPropiedades();
-    </script>
+    // ══ MODAL EDITAR ═════════════════════════════════════════
+
+    function abrirModalEditar(id, titulo, tipo, precio, estado) {
+        idEditando = id;
+        document.getElementById('e-titulo').value = titulo;
+        document.getElementById('e-precio').value = precio;
+        var selTipo = document.getElementById('e-tipo');
+        for (var i = 0; i < selTipo.options.length; i++) {
+            if (selTipo.options[i].value === tipo) { selTipo.selectedIndex = i; break; }
+        }
+        var selEstado = document.getElementById('e-estado');
+        for (var j = 0; j < selEstado.options.length; j++) {
+            if (selEstado.options[j].value === estado) { selEstado.selectedIndex = j; break; }
+        }
+        document.getElementById('modal-editar').classList.add('activo');
+    }
+
+    function cerrarModalEditar() {
+        document.getElementById('modal-editar').classList.remove('activo');
+        idEditando = null;
+    }
+
+    async function guardarEdicion() {
+        var titulo = document.getElementById('e-titulo').value.trim();
+        var precio = document.getElementById('e-precio').value;
+        if (!titulo || !precio) { mostrarToast(' Completa los campos obligatorios.'); return; }
+
+        var params = new URLSearchParams();
+        params.append('accion',  'actualizar');
+        params.append('id',      idEditando);
+        params.append('titulo',  titulo);
+        params.append('tipo',    document.getElementById('e-tipo').value);
+        params.append('precio',  precio);
+        params.append('estado',  document.getElementById('e-estado').value);
+
+        try {
+            var res  = await fetch(BASE_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+            var data = await res.json();
+            if (data.mensaje) {
+                cerrarModalEditar();
+                cargarPropiedades();
+                // ✅ Refresca notificaciones para mostrar el cambio recién generado
+                setTimeout(cargarNotificaciones, 500);
+                mostrarToast('✅ ' + data.mensaje);
+            } else {
+                mostrarToast('❌ ' + (data.error || 'Error al actualizar.'));
+            }
+        } catch (e) {
+            mostrarToast('❌ Error al conectar con el servidor.');
+        }
+    }
+
+    // ══ Utilidades ═══════════════════════════════════════════
+
+    function mostrarToast(msg) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('visible');
+        setTimeout(function() { t.classList.remove('visible'); }, 3000);
+    }
+
+    function esc(str) {
+        return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+</script>
 </body>
 </html>

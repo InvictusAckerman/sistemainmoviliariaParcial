@@ -5,11 +5,13 @@ import com.micropropiedades.modelo.PropiedadDTO;
 import com.micropropiedades.servicio.BusquedaPorPrecio;
 import com.micropropiedades.servicio.BusquedaPorTipo;
 import com.micropropiedades.servicio.PropiedadServicio;
+import com.microusuarios.modelo.UsuarioDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -28,12 +30,11 @@ public class PropiedadServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
-        String accion    = request.getParameter("accion");
-        String criterio  = request.getParameter("criterio");
+        String accion   = request.getParameter("accion");
+        String criterio = request.getParameter("criterio");
 
         try {
             if (accion == null || accion.isEmpty()) {
-                // Listar todos
                 List<Inmueble> lista = servicio.listarTodos();
                 out.print(listaToJson(lista));
 
@@ -89,6 +90,7 @@ public class PropiedadServlet extends HttpServlet {
                     out.print("{\"mensaje\":\"Inmueble registrado correctamente\"}");
                     break;
                 }
+
                 case "actualizar": {
                     PropiedadDTO dto = new PropiedadDTO();
                     dto.setId(Integer.parseInt(request.getParameter("id")));
@@ -97,16 +99,27 @@ public class PropiedadServlet extends HttpServlet {
                     dto.setPrecio(Double.parseDouble(request.getParameter("precio")));
                     dto.setEstado(request.getParameter("estado"));
 
-                    servicio.actualizar(dto);
+                    //  Leer usuario de la sesión (lo guarda UsuarioController al hacer login)
+                    HttpSession session = request.getSession(false);
+                    int usuarioDestinoId = 0;
+                    if (session != null && session.getAttribute("usuarioLogueado") != null) {
+                        UsuarioDTO usuarioSesion = (UsuarioDTO) session.getAttribute("usuarioLogueado");
+                        usuarioDestinoId = usuarioSesion.getId();
+                    }
+
+                    // ✅ Actualiza en PostgreSQL y notifica a MongoDB
+                    servicio.actualizarYNotificar(dto, usuarioDestinoId);
                     out.print("{\"mensaje\":\"Inmueble actualizado correctamente\"}");
                     break;
                 }
+
                 case "eliminar": {
                     int id = Integer.parseInt(request.getParameter("id"));
                     servicio.eliminar(id);
                     out.print("{\"mensaje\":\"Inmueble eliminado correctamente\"}");
                     break;
                 }
+
                 default:
                     response.setStatus(400);
                     out.print("{\"error\":\"Acción no reconocida\"}");

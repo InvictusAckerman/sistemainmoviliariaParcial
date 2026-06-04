@@ -1,42 +1,66 @@
 package com.micronotificaciones.persistencia;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.micronotificaciones.modelo.NotifDTO;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-// ✅ Simula MongoDB — en producción usaría MongoClient
 public class NotifDAO {
 
-    // Lista en memoria simulando MongoDB
-    private static List<NotifDTO> coleccion = new ArrayList<>();
-    private static int contador = 1;
+    private MongoCollection<Document> coleccion;
 
-    public void insertar(NotifDTO n) throws Exception {
-        n.setId("notif_" + contador++);
-        coleccion.add(n);
+    public NotifDAO() {
+        this.coleccion = MongoConexion.getInstance().getColeccion();
     }
 
-    public List<NotifDTO> listarPorUsuario(int usuarioId) throws Exception {
-        List<NotifDTO> resultado = new ArrayList<>();
-        for (NotifDTO n : coleccion) {
-            if (n.getUsuarioDestinoId() == usuarioId) {
-                resultado.add(n);
-            }
-        }
-        return resultado;
+    public void insertar(NotifDTO notif) {
+        Document doc = new Document()
+            .append("tipo",               notif.getTipo())
+            .append("inmueble_id",        notif.getInmuebleId())
+            .append("usuario_destino_id", notif.getUsuarioDestinoId())
+            .append("mensaje",            notif.getMensaje())
+            .append("leida",              false)
+            .append("createdAt",          notif.getCreatedAt() != null
+                                          ? notif.getCreatedAt() : new Date());
+        coleccion.insertOne(doc);
+        notif.setId(doc.getObjectId("_id").toHexString());
     }
 
-    public void marcarLeida(String id) throws Exception {
-        for (NotifDTO n : coleccion) {
-            if (n.getId().equals(id)) {
-                n.setLeida(true);
-                break;
-            }
-        }
+    public List<NotifDTO> listarPorUsuario(int usuarioDestinoId) {
+        List<NotifDTO> lista = new ArrayList<>();
+        coleccion.find(Filters.eq("usuario_destino_id", usuarioDestinoId))
+                 .forEach(doc -> lista.add(documentToDTO(doc)));
+        return lista;
     }
 
-    public List<NotifDTO> listarTodas() throws Exception {
-        return new ArrayList<>(coleccion);
+    public boolean marcarLeida(String id) {
+        var resultado = coleccion.updateOne(
+            Filters.eq("_id", new ObjectId(id)),
+            Updates.set("leida", true)
+        );
+        return resultado.getModifiedCount() > 0;
+    }
+
+    public List<NotifDTO> listarTodas() {
+        List<NotifDTO> lista = new ArrayList<>();
+        coleccion.find().forEach(doc -> lista.add(documentToDTO(doc)));
+        return lista;
+    }
+
+    private NotifDTO documentToDTO(Document doc) {
+        NotifDTO dto = new NotifDTO();
+        dto.setId(doc.getObjectId("_id").toHexString());
+        dto.setTipo(doc.getString("tipo"));
+        dto.setInmuebleId(doc.getInteger("inmueble_id", 0));
+        dto.setUsuarioDestinoId(doc.getInteger("usuario_destino_id", 0));
+        dto.setMensaje(doc.getString("mensaje"));
+        dto.setLeida(doc.getBoolean("leida", false));
+        dto.setCreatedAt(doc.getDate("createdAt"));
+        return dto;
     }
 }
