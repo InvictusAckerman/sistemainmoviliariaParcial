@@ -1,6 +1,6 @@
-package com.modelo;
+package com.microusuarios.modelo;
 
-public class Usuario {
+public class UsuarioDTO {
     private int id;
     private String nombre;
     private String apellido;
@@ -9,11 +9,10 @@ public class Usuario {
     private String tipoUsuario;
     private String contrasena;
 
-    public Usuario() {}
+    public UsuarioDTO() {}
 
-    public Usuario(int id, String nombre, String apellido,
-                   String email, String telefono,
-                   String tipoUsuario, String contrasena) {
+    public UsuarioDTO(int id, String nombre, String apellido, String email, 
+                      String telefono, String tipoUsuario, String contrasena) {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;

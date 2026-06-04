@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="com.modelo.Usuario" %>
+<%@ page import="com.microusuarios.modelo.UsuarioDTO" %>
 <%
-    Usuario u = (Usuario) request.getAttribute("usuario");
+    UsuarioDTO u = (UsuarioDTO) request.getAttribute("usuario");
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -42,7 +42,7 @@
         </div>
         <h1>Editar usuario</h1>
 
-        <form action="UsuarioServlet" method="POST">
+        <form action="usuarios" method="POST">
             <input type="hidden" name="accion" value="actualizar">
             <input type="hidden" name="id" value="<%= u.getId() %>">
 
@@ -55,20 +55,16 @@
                 <input type="text" name="apellido" value="<%= u.getApellido() %>" required>
             </div>
             <div class="form-group">
-                <label>Correo electrónico <span>*</span></label>
-                <input type="email" name="email" value="<%= u.getEmail() %>" required>
+                <label>Correo electrónico</label>
+                <input type="email" value="<%= u.getEmail() %>" disabled style="background:#f3f4f6; color:#9ca3af;">
             </div>
             <div class="form-group">
                 <label>Teléfono</label>
                 <input type="text" name="telefono" value="<%= u.getTelefono() %>">
             </div>
             <div class="form-group">
-                <label>Contraseña</label>
-                <input type="password" name="contrasena" value="<%= u.getContrasena() %>">
-            </div>
-            <div class="form-group">
                 <label>Tipo de usuario</label>
-                <select name="tipo_usuario">
+                <select name="tipoUsuario">
                     <option value="comprador"     <%= "comprador".equals(u.getTipoUsuario())     ? "selected" : "" %>>Comprador</option>
                     <option value="vendedor"      <%= "vendedor".equals(u.getTipoUsuario())      ? "selected" : "" %>>Vendedor</option>
                     <option value="agente"        <%= "agente".equals(u.getTipoUsuario())        ? "selected" : "" %>>Agente</option>
@@ -77,7 +73,7 @@
             </div>
             <button class="btn" type="submit">Guardar cambios</button>
         </form>
-        <a class="link" href="UsuarioServlet?accion=listar">&larr; Volver a la lista</a>
+        <a class="link" href="usuarios?accion=listar">&larr; Volver a la lista</a>
     </div>
 
     <div class="panel-deco">
